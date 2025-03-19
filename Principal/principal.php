@@ -32,23 +32,16 @@ if ($result->num_rows > 0) {
     exit();
 }
 
-// Simulación de publicaciones
-$publicaciones = [
-    [
-        'titulo' => 'Mi primera publicación',
-        'contenido' => 'Este es el contenido de mi primera publicación.',
-        'imagen_usuario' => 'WhatsApp Image 2024-06-11 at 10.51.07 AM.jpeg',
-        'likes' => 10,
-        'dislikes' => 2
-    ],
-    [
-        'titulo' => 'Otra publicación',
-        'contenido' => 'Aquí hay otro contenido interesante.',
-        'imagen_usuario' => 'usuario2.jpg',
-        'likes' => 25,
-        'dislikes' => 3
-    ]
-];
+// Consulta para obtener todas las publicaciones junto con los datos del usuario publicador
+$sql = "SELECT p.*, u.Nombre_usu, u.Img_Perfil AS Perfil_Img 
+        FROM publicaciones p 
+        JOIN usuarios u ON p.Id_Usu = u.ID_usu 
+        ORDER BY p.Fecha_publicacion DESC";
+$result = $conn->query($sql);
+$publicaciones = [];
+if ($result && $result->num_rows > 0) {
+    $publicaciones = $result->fetch_all(MYSQLI_ASSOC);
+}
 ?>
 
 <!DOCTYPE html>
@@ -96,33 +89,63 @@ $publicaciones = [
             <!-- Contenido Principal -->
             <div class="col-md-9">
                 <!-- Publicar -->
-                <div class="bg-white p-3 shadow-sm rounded mb-3 text-dark">
-                    <h5 class="mb-2">¿Qué estás pensando?</h5>
-                    <textarea class="form-control mb-2" rows="2" placeholder="Escribe algo..."></textarea>
-                    <div class="d-flex justify-content-between">
-                        <button class="btn btn-secondary"><i class="bi bi-images"></i> Foto</button>
-                        <button class="btn btn-success"><i class="bi bi-cloud-arrow-up-fill"></i> Publicar</button>
-                    </div>
-                </div>
+                <form method="post" action="publicar.php" enctype="multipart/form-data">
+                    <div class="bg-white p-3 shadow-sm rounded mb-3 text-dark">
+                        <h5 class="mb-2">¿Qué estás pensando?</h5>
+                        <textarea name="contenido" class="form-control mb-2" rows="2"
+                            placeholder="Escribe algo..."></textarea>
 
-                <!-- Publicaciones -->
+                        <!-- Campo para imagen (opcional) -->
+                        <div class="mb-2">
+                            <label class="form-label">Añadir imagen? </label>
+                            <input type="file" name="imagen_publicacion" accept=".jpg, .jpeg, .png">
+                        </div>
+
+                        <div class="d-flex justify-content-end">
+                            <button type="submit" class="btn btn-success"><i class="bi bi-cloud-arrow-up-fill"></i>
+                                Publicar</button>
+                        </div>
+                    </div>
+                </form>
+
+
+                <!-- Listado de Publicaciones -->
                 <?php foreach ($publicaciones as $post): ?>
                     <div class="bg-white p-3 shadow-sm rounded mb-3 text-dark">
                         <div class="d-flex align-items-center mb-2">
-                            <img src="<?php echo $post['imagen_usuario']; ?>" alt="Foto Usuario" class="rounded-circle me-2"
+                            <?php
+                            // Para la imagen de perfil del usuario que publicó:
+                            if (!empty($post['Perfil_Img'])) {
+                                $imgPerfilPub = 'data:image/jpeg;base64,' . base64_encode($post['Perfil_Img']);
+                            } else {
+                                $imgPerfilPub = 'default.png';
+                            }
+                            ?>
+                            <img src="<?php echo $imgPerfilPub; ?>" alt="Foto Usuario" class="rounded-circle me-2"
                                 width="40" height="40">
-                            <strong>Usuario</strong>
+                            <strong><?php echo $post['Nombre_usu']; ?></strong>
                         </div>
-                        <h5 class="fw-bold"> <?php echo $post['titulo']; ?> </h5>
-                        <p class="text-muted"> <?php echo $post['contenido']; ?> </p>
+                        <!-- No mostramos el Título (Titulo_pub) ya que es para uso interno -->
+                        <p class="text-muted"><?php echo $post['Contenido_pub']; ?></p>
+                        <?php if (!empty($post['Imagen_Pub'])): ?>
+                            <div class="mb-2">
+                                <?php
+                                // Convertir la imagen de la publicación (BLOB) a Base64 para mostrarla
+                                $imgPub = 'data:image/jpeg;base64,' . base64_encode($post['Imagen_Pub']);
+                                ?>
+                                <img src="<?php echo $imgPub; ?>" alt="Imagen Publicación" class="img-fluid" width="80"
+                                    height="80">
+                            </div>
+                        <?php endif; ?>
                         <div class="d-flex gap-2">
                             <button class="btn btn-primary btn-sm"><i class="fas fa-thumbs-up"></i> Like
-                                (<?php echo $post['likes']; ?>)</button>
+                                (<?php echo $post['Like_pub']; ?>)</button>
                             <button class="btn btn-danger btn-sm"><i class="fas fa-thumbs-down"></i> Dislike
-                                (<?php echo $post['dislikes']; ?>)</button>
+                                (<?php echo $post['Dislike_pub']; ?>)</button>
                         </div>
                     </div>
                 <?php endforeach; ?>
+
             </div>
         </div>
 
