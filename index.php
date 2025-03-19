@@ -39,7 +39,21 @@
                         <input id="password" type="password" name="contrasena" placeholder="Tu contraseña">
                         <img alt="Password Icon" title="Password Icon" src="cerrar.png">
                     </div>
+
                     <button class="my-form__button" type="submit">Iniciar sesión</button>
+
+                    <!-- Divider -->
+                    <div class="divider">
+                        <div class="divider-line"></div>
+                        O
+                        <div class="divider-line"></div>
+                    </div>
+
+                    <div class="my-form__actions">
+                        <div class="my-form__signup">
+                            <a href="registro.php" title="Create Account">Crea una cuenta</a>
+                        </div>
+                    </div>
                 </form>
             </div>
         </div>

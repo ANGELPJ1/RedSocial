@@ -14,23 +14,23 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $stmt->execute();
     $result = $stmt->get_result();
 
+
     if ($result->num_rows > 0) {
         $row = $result->fetch_assoc();
         $hashedPassword = $row['Pass_usu'];
 
         if (password_verify($contrasena, $hashedPassword)) {
-            $_SESSION['usuario'] = $usuario;
-            $_SESSION['permiso'] = $row['Permiso_usu'];
+            $_SESSION['usuario'] = [
+                'id' => $row['ID_usu'],  // Asegúrate de que el ID esté bien escrito
+                'nombre' => $row['Nombre_usu'],
+                'usuario' => $row['Nombre_usu'],  // Ajusta si el nombre de usuario está en otra columna
+                'imagen' => $row['Imagen_usu'] ?? 'default.png', // Imagen por defecto si no tiene
+                'permiso' => $row['Permiso_usu']
+            ];
 
-            header("Location: Login/index.php");
+            header("Location: Principal/principal.php");
             exit();
         } else {
-            // Registrar intento fallido
-            $sqlUpdateIntentos = "INSERT INTO intentos_login (usuario, ip, intentos) VALUES (?, ?, 1) ON DUPLICATE KEY UPDATE intentos = intentos + 1, ultimo_intento = NOW()";
-            $stmt = $conn->prepare($sqlUpdateIntentos);
-            $stmt->bind_param("ss", $usuario, $ip);
-            $stmt->execute();
-
             echo '<!DOCTYPE html>
             <html lang="es">
             <head>
@@ -48,7 +48,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         confirmButtonText: "Reintentar",
                         confirmButtonColor: "#d33"
                     }).then(() => {
-                        window.location.href = "login.php";
+                        window.location.href = "index.php";
                     });
                 </script>
             </body>
@@ -73,7 +73,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     confirmButtonText: "Reintentar",
                     confirmButtonColor: "#d33"
                 }).then(() => {
-                    window.location.href = "login.php";
+                    window.location.href = "index.php";
                 });
             </script>
         </body>

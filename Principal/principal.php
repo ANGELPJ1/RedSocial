@@ -1,12 +1,13 @@
 <?php
 session_start();
+require '../Conexion_BD/bd.php';
 
-// Simulación de usuario
-$_SESSION['usuario'] = [
-    'imagen' => './WhatsApp Image 2024-06-11 at 10.51.07 AM.jpeg',
-    'nombre' => 'Angel PJ',
-    'usuario' => 'BDAPJ'
-];
+// Verificar si el usuario está autenticado
+if (!isset($_SESSION['usuario'])) {
+    header("Location: ../index.php");
+    exit();
+}
+
 
 // Simulación de publicaciones
 $publicaciones = [
@@ -120,6 +121,7 @@ $publicaciones = [
                             Cancelar
                         </button>
                         <button class="btn btn-danger" onclick="cerrarSesion()">
+                            <i class="bi bi-door-closed-fill"></i>
                             Cerrar sesión
                         </button>
                     </div>

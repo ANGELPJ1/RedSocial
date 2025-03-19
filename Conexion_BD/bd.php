@@ -7,12 +7,6 @@ $username = "root";
 $password = "";
 $dbname = "redsocial";
 
-// Datos del servidor
-//$servername = "162.241.203.242";
-//$username = "fotogr79_admin_FotoyVideoAS";
-//$password = "~C7vWvB)a!f3";
-//$dbname = "fotogr79_fotoyvideoas";
-
 // Crear conexión
 $conn = new mysqli($servername, $username, $password, $dbname);
 
