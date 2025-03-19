@@ -2,12 +2,35 @@
 session_start();
 require '../Conexion_BD/bd.php';
 
-// Verificar si el usuario está autenticado
-if (!isset($_SESSION['usuario'])) {
+// Verificar si el usuario ha iniciado sesión
+if (!isset($_SESSION['usuario']['correo'])) {
     header("Location: ../index.php");
     exit();
 }
 
+$id = $_SESSION['usuario']['id'];
+
+
+// Consulta para obtener los datos del usuario
+$sql = "SELECT ID_usu, Nombre_usu, Usuario_usu, Correo_usu, Pass_usu, Img_Perfil FROM usuarios WHERE ID_usu = ?";
+$stmt = $conn->prepare($sql);
+$stmt->bind_param("i", $id);
+$stmt->execute();
+$result = $stmt->get_result();
+
+if ($result->num_rows > 0) {
+    $usuario = $result->fetch_assoc();
+    $_SESSION['usuario'] = [
+        'id' => $usuario['ID_usu'],
+        'nombre' => $usuario['Nombre_usu'],
+        'usuario' => $usuario['Usuario_usu'],
+        'correo' => $usuario['Correo_usu'],
+        'imagen' => $usuario['Img_Perfil']
+    ];
+} else {
+    echo "Usuario no encontrado.";
+    exit();
+}
 
 // Simulación de publicaciones
 $publicaciones = [
@@ -26,7 +49,6 @@ $publicaciones = [
         'dislikes' => 3
     ]
 ];
-
 ?>
 
 <!DOCTYPE html>
@@ -57,8 +79,9 @@ $publicaciones = [
             <!-- Perfil Usuario -->
             <div class="col-md-3">
                 <div class="bg-white p-3 shadow-sm rounded mb-3 text-center text-dark">
-                    <img src="<?php echo $_SESSION['usuario']['imagen']; ?>" alt="Usuario" class="rounded-circle mb-2"
-                        width="50" height="50">
+                    <img src="<?php echo 'data:image/jpeg;base64,' . base64_encode($_SESSION['usuario']['imagen']); ?>"
+                        alt="Usuario" class="rounded-circle mb-2" width="50" height="50">
+
                     <h5 class="fw-bold"> <?php echo $_SESSION['usuario']['nombre']; ?> </h5>
                     <p class="text-muted">@<?php echo $_SESSION['usuario']['usuario']; ?></p>
                     <button class="btn btn-warning w-100"><i class="bi bi-person-fill-gear"></i> Editar perfil

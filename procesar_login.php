@@ -23,6 +23,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $_SESSION['usuario'] = [
                 'id' => $row['ID_usu'],  // Asegúrate de que el ID esté bien escrito
                 'nombre' => $row['Nombre_usu'],
+                'correo' => $row['Correo_usu'],
                 'usuario' => $row['Nombre_usu'],  // Ajusta si el nombre de usuario está en otra columna
                 'imagen' => $row['Imagen_usu'] ?? 'default.png', // Imagen por defecto si no tiene
                 'permiso' => $row['Permiso_usu']
