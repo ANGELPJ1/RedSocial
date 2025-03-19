@@ -44,31 +44,6 @@
             </div>
         </div>
     </div>
-
-    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
-
-
-    <!-- SDK de Google Sign-In -->
-    <script src="https://accounts.google.com/gsi/client" async defer></script>
-    <script>
-        const clientId = "987904877554-0l0u2khu4rtmtenio5fiaen0v74f1t4k.apps.googleusercontent.com";
-
-        document.getElementById("googleSignInButton").addEventListener("click", function (event) {
-            event.preventDefault();
-            google.accounts.id.initialize({
-                client_id: clientId,
-                callback: handleCredentialResponse
-            });
-            google.accounts.id.prompt();
-        });
-
-        function handleCredentialResponse(response) {
-            console.log("Encoded JWT ID token: " + response.credential);
-            const token = response.credential;
-            const payload = JSON.parse(atob(token.split('.')[1]));
-            console.log("Información del usuario:", payload);
-        }
-    </script>
 </body>
 
 </html>

@@ -1,5 +1,5 @@
 <?php
-require_once '../Conexion_BD/bd.php'; // Conexión a la base de datos
+require_once 'Conexion_BD/bd.php'; // Conexión a la base de datos
 
 // Seleccionar todas las contraseñas actuales
 $sql = "SELECT ID_usu, Pass_usu FROM usuarios";

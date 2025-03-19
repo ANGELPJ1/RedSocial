@@ -4,6 +4,6 @@ session_unset(); // Eliminar todas las variables de sesión
 session_destroy(); // Destruir la sesión activa
 
 // Redirigir al usuario al login
-header("Location: ../Login/login.php");
+header("Location: login.php");
 exit();
 ?>
