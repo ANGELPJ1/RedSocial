@@ -22,7 +22,7 @@
             </a>
             <div class="my-form__wrapper">
                 <div class="login-welcome-row">
-                    <h1>Bienvenido de nuevo! 👋</h1>
+                    <h1>Bienvenido a CaptureMe! 👋</h1>
                     <p>Ingresa tus datos :</p>
                 </div>
 
