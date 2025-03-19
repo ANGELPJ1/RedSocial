@@ -5,7 +5,7 @@
 $servername = "localhost";
 $username = "root";
 $password = "";
-$dbname = "fotoyvideoas";
+$dbname = "redsocial";
 
 // Datos del servidor
 //$servername = "162.241.203.242";
