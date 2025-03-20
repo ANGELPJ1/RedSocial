@@ -64,17 +64,12 @@ foreach ($publicaciones as $key => $post) {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <link rel="stylesheet" href="barra.css">
+
+    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+
 
     <style>
-        body {
-            background: #111;
-            background-size: cover;
-            min-height: 97vh;
-            margin: 0;
-            color: white;
-        }
-
-
         /* Fondo animado */
         .gradiente {
             width: 100%;
@@ -109,7 +104,7 @@ foreach ($publicaciones as $key => $post) {
 
         /* Contenedor del perfil */
         .profile-container {
-            background: white;
+            background: radial-gradient(circle at bottom, #000014, #000000);
             padding: 15px;
             border-radius: 10px;
             text-align: center;
@@ -124,170 +119,198 @@ foreach ($publicaciones as $key => $post) {
         .profile-container h5 {
             margin-top: 10px;
         }
+
+        /* Fondo de partículas */
+        #particles-js {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at bottom, #000014, #000000);
+            z-index: 0;
+            /* Mantiene las partículas interactivas */
+        }
+
+        /* Contenedor principal de la página */
+        .main-content {
+            position: relative;
+            /* Importante para que el z-index funcione */
+            z-index: 1;
+            /* Se mantiene por encima del fondo */
+            padding: 20px;
+        }
     </style>
 </head>
 
 <body>
-    <div class="container mt-4">
-        <div class="row">
-            <!-- Perfil Usuario -->
-            <div class="col-md-3 text-white">
-                <div class="gradiente">
-                    <div class="profile-container bg-dark">
-                        <?php
-                        // Mostrar la imagen de perfil: si se almacena como BLOB, conviértela a Base64
-                        if (!empty($_SESSION['usuario']['imagen'])) {
-                            $imgPerfil = 'data:image/jpeg;base64,' . base64_encode($_SESSION['usuario']['imagen']);
-                        } else {
-                            $imgPerfil = 'default.png';
-                        }
-                        ?>
-                        <img src="<?php echo $imgPerfil; ?>" alt="Usuario" width="50" height="50">
-                        <h5 class="fw-bold"><?php echo $_SESSION['usuario']['nombre']; ?></h5>
-                        <p class="text-white">@<?php echo $_SESSION['usuario']['usuario']; ?></p>
-                        <button class="btn btn-outline-warning w-100"><i class="bi bi-person-fill-gear"></i> Editar
-                            perfil</button>
-                        <button class="btn btn-outline-danger w-100 mt-2" data-bs-toggle="modal"
-                            data-bs-target="#logoutModal">
-                            <i class="bi bi-box-arrow-left"></i> Cerrar sesión
-                        </button>
-                    </div>
-                </div>
+    <div id="particles-js"></div>
 
-                <br>
-                <br>
-                <div class="gradiente">
-                    <div class="profile-container bg-dark">
-                        <h4>Acerca de...</h4>
-                        <img src="../Resources/logo3.jpg" alt="Usuario" width="100" height="100">
-                        <h6>
-                            <p></p>
-                            Hola, bienvenido a CaptureMe!
-                            <p></p>
-                            <p>Estas en una 1ra. version !!!</p>
-                        </h6>
-                    </div>
-                </div>
-            </div>
-
-
-
-            <!-- Contenido Principal -->
-            <div class="col-md-9">
-                <!-- Formulario para Publicar -->
-                <form method="post" action="publicar.php" enctype="multipart/form-data">
-                    <div class="bg-white p-3 shadow-sm rounded mb-3 text-dark">
-                        <h5 class="mb-2">¿Qué estás pensando?</h5>
-                        <textarea name="contenido" class="form-control mb-2" rows="2"
-                            placeholder="Escribe algo..."></textarea>
-                        <!-- Campo para imagen (opcional) -->
-                        <div class="mb-2">
-                            <label class="form-label">Añadir imagen? </label>
-                            <input type="file" name="imagen_publicacion" accept=".jpg, .jpeg, .png">
-                        </div>
-                        <div class="d-flex justify-content-end">
-                            <button type="submit" class="btn btn-success">
-                                <i class="bi bi-cloud-arrow-up-fill"></i> Publicar
-                            </button>
-                        </div>
-                    </div>
-                </form>
-
-                <!-- Listado de Publicaciones -->
-                <?php foreach ($publicaciones as $post): ?>
-                    <div class="bg-white p-3 shadow-sm rounded mb-3 text-dark" data-pub-id="<?php echo $post['Id_pub']; ?>">
-                        <div class="d-flex align-items-center mb-2">
+    <div class="main-content">
+        <div class="container mt-4">
+            <div class="row">
+                <!-- Perfil Usuario -->
+                <div class="col-md-3 text-white">
+                    <div class="gradiente">
+                        <div class="profile-container bg-dark">
                             <?php
-                            // Imagen de perfil del publicador
-                            if (!empty($post['Perfil_Img'])) {
-                                $imgPerfilPub = 'data:image/jpeg;base64,' . base64_encode($post['Perfil_Img']);
+                            // Mostrar la imagen de perfil: si se almacena como BLOB, conviértela a Base64
+                            if (!empty($_SESSION['usuario']['imagen'])) {
+                                $imgPerfil = 'data:image/jpeg;base64,' . base64_encode($_SESSION['usuario']['imagen']);
                             } else {
-                                $imgPerfilPub = 'default.png';
+                                $imgPerfil = 'default.png';
                             }
                             ?>
-                            <img src="<?php echo $imgPerfilPub; ?>" alt="Foto Usuario" class="rounded-circle me-2"
-                                width="40" height="40">
-                            <strong><?php echo $post['Nombre_usu']; ?></strong>
-                        </div>
-                        <hr class="my-2"> <!-- Línea divisoria -->
-
-                        <!-- Contenido de la publicación -->
-                        <p class="text-muted"><?php echo $post['Contenido_pub']; ?></p>
-                        <?php if (!empty($post['Imagen_Pub'])): ?>
-                            <div class="mb-2">
-                                <?php
-                                $imgPub = 'data:image/jpeg;base64,' . base64_encode($post['Imagen_Pub']);
-                                ?>
-                                <img src="<?php echo $imgPub; ?>" alt="Imagen Publicación" class="img-fluid" width="80"
-                                    height="80">
-                            </div>
-                        <?php endif; ?>
-
-                        <hr class="my-2"> <!-- Línea divisoria -->
-                        <div class="d-flex gap-2">
-                            <button class="btn btn-primary btn-sm btn-like" data-pub-id="<?php echo $post['Id_pub']; ?>">
-                                <i class="fas fa-thumbs-up"></i> Me gusta (<span
-                                    class="counter"><?php echo $post['Like_pub']; ?></span>)
+                            <img src="<?php echo $imgPerfil; ?>" alt="Usuario" width="50" height="50">
+                            <h5 class="fw-bold"><?php echo $_SESSION['usuario']['nombre']; ?></h5>
+                            <p class="text-white">@<?php echo $_SESSION['usuario']['usuario']; ?></p>
+                            <button class="btn btn-outline-warning w-100"><i class="bi bi-person-fill-gear"></i> Editar
+                                perfil</button>
+                            <button class="btn btn-outline-danger w-100 mt-2" data-bs-toggle="modal"
+                                data-bs-target="#logoutModal">
+                                <i class="bi bi-box-arrow-left"></i> Cerrar sesión
                             </button>
-                            <button class="btn btn-danger btn-sm btn-dislike" data-pub-id="<?php echo $post['Id_pub']; ?>">
-                                <i class="fas fa-thumbs-down"></i> No me gusta (<span
-                                    class="counter"><?php echo $post['Dislike_pub']; ?></span>)
-                            </button>
-                            <div class="d-flex justify-content-end">
-                                <button class="btn btn-sm btn-warning toggle-comments"
-                                    data-pub-id="<?php echo $post['Id_pub']; ?>">
-                                    <i class="bi bi-chat-left-dots"></i>
-                                    Ver comentarios
-                                    <?php echo ($post['num_comentarios'] > 0) ? "(" . $post['num_comentarios'] . ")" : ""; ?>
-                                </button>
-                            </div>
-                        </div>
-
-                        <!-- Línea divisoria antes de los comentarios -->
-                        <hr class="my-2">
-
-                        <!-- Sección de comentarios -->
-
-                        <div class="comments-section mt-3" id="comments-<?php echo $post['Id_pub']; ?>"
-                            style="display: none;">
-                            <div class="comments-list"></div> <!-- Aquí se cargarán los comentarios -->
-
-                            <!-- Formulario para agregar comentario -->
-                            <div class="mt-2">
-                                <textarea class="form-control comment-input"
-                                    placeholder="Escribe un comentario..."></textarea>
-                                <button class="btn btn-sm btn-success mt-2 add-comment"
-                                    data-pub-id="<?php echo $post['Id_pub']; ?>">
-                                    Comentar
-                                </button>
-                            </div>
                         </div>
                     </div>
-                <?php endforeach; ?>
 
+                    <br>
+                    <br>
+                    <div class="gradiente">
+                        <div class="profile-container bg-dark">
+                            <h4>Acerca de...</h4>
+                            <img src="../Resources/logo3.jpg" alt="Usuario" width="100" height="100">
+                            <h6>
+                                <p></p>
+                                Hola, bienvenido a CaptureMe!
+                                <p></p>
+                                <p>Estas en una 1ra. version !!!</p>
+                            </h6>
+                        </div>
+                    </div>
+                </div>
+
+
+
+                <!-- Contenido Principal -->
+                <div class="col-md-9">
+                    <!-- Formulario para Publicar -->
+                    <form method="post" action="publicar.php" enctype="multipart/form-data">
+                        <div class="bg-white p-3 shadow-sm rounded mb-3 text-dark">
+                            <h5 class="mb-2">¿Qué estás pensando?</h5>
+                            <textarea name="contenido" class="form-control mb-2" rows="2"
+                                placeholder="Escribe algo..."></textarea>
+                            <!-- Campo para imagen (opcional) -->
+                            <div class="mb-2">
+                                <label class="form-label">Añadir imagen? </label>
+                                <input type="file" name="imagen_publicacion" accept=".jpg, .jpeg, .png">
+                            </div>
+                            <div class="d-flex justify-content-end">
+                                <button type="submit" class="btn btn-success">
+                                    <i class="bi bi-cloud-arrow-up-fill"></i> Publicar
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+
+                    <!-- Listado de Publicaciones -->
+                    <?php foreach ($publicaciones as $post): ?>
+                        <div class="bg-white p-3 shadow-sm rounded mb-3 text-dark"
+                            data-pub-id="<?php echo $post['Id_pub']; ?>">
+                            <div class="d-flex align-items-center mb-2">
+                                <?php
+                                // Imagen de perfil del publicador
+                                if (!empty($post['Perfil_Img'])) {
+                                    $imgPerfilPub = 'data:image/jpeg;base64,' . base64_encode($post['Perfil_Img']);
+                                } else {
+                                    $imgPerfilPub = 'default.png';
+                                }
+                                ?>
+                                <img src="<?php echo $imgPerfilPub; ?>" alt="Foto Usuario" class="rounded-circle me-2"
+                                    width="40" height="40">
+                                <strong><?php echo $post['Nombre_usu']; ?></strong>
+                            </div>
+                            <hr class="my-2"> <!-- Línea divisoria -->
+
+                            <!-- Contenido de la publicación -->
+                            <p class="text-black"><?php echo $post['Contenido_pub']; ?></p>
+                            <?php if (!empty($post['Imagen_Pub'])): ?>
+                                <div class="mb-2">
+                                    <?php
+                                    $imgPub = 'data:image/jpeg;base64,' . base64_encode($post['Imagen_Pub']);
+                                    ?>
+                                    <img src="<?php echo $imgPub; ?>" alt="Imagen Publicación" class="img-fluid" width="80"
+                                        height="80">
+                                </div>
+                            <?php endif; ?>
+
+                            <hr class="my-2"> <!-- Línea divisoria -->
+                            <div class="d-flex gap-2">
+                                <button class="btn btn-primary btn-sm btn-like"
+                                    data-pub-id="<?php echo $post['Id_pub']; ?>">
+                                    <i class="fas fa-thumbs-up"></i> Me gusta (<span
+                                        class="counter"><?php echo $post['Like_pub']; ?></span>)
+                                </button>
+                                <button class="btn btn-danger btn-sm btn-dislike"
+                                    data-pub-id="<?php echo $post['Id_pub']; ?>">
+                                    <i class="fas fa-thumbs-down"></i> No me gusta (<span
+                                        class="counter"><?php echo $post['Dislike_pub']; ?></span>)
+                                </button>
+                                <div class="d-flex justify-content-end">
+                                    <button class="btn btn-sm btn-warning toggle-comments"
+                                        data-pub-id="<?php echo $post['Id_pub']; ?>">
+                                        <i class="bi bi-chat-left-dots"></i>
+                                        Ver comentarios
+                                        <?php echo ($post['num_comentarios'] > 0) ? "(" . $post['num_comentarios'] . ")" : ""; ?>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Línea divisoria antes de los comentarios -->
+                            <hr class="my-2">
+
+                            <!-- Sección de comentarios -->
+
+                            <div class="comments-section mt-3" id="comments-<?php echo $post['Id_pub']; ?>"
+                                style="display: none;">
+                                <div class="comments-list"></div> <!-- Aquí se cargarán los comentarios -->
+
+                                <!-- Formulario para agregar comentario -->
+                                <div class="mt-2">
+                                    <textarea class="form-control comment-input"
+                                        placeholder="Escribe un comentario..."></textarea>
+                                    <button class="btn btn-sm btn-success mt-2 add-comment"
+                                        data-pub-id="<?php echo $post['Id_pub']; ?>">
+                                        <i class="bi bi-chat-dots"></i> Comentar
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+
+                </div>
             </div>
+
+
         </div>
 
-        <!-- Logout Modal -->
-        <div class="modal fade" id="logoutModal" tabindex="-1" role="dialog" aria-labelledby="logoutModalLabel"
-            aria-hidden="true">
-            <div class="modal-dialog" role="document">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title text-dark" id="logoutModalLabel">¿Seguro que te quieres ir?</h5>
-                        <button class="btn-close" type="button" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body text-dark">
-                        Presiona "Cerrar sesión" si deseas salir de la sesión actual.
-                    </div>
-                    <div class="modal-footer text-dark">
-                        <button class="btn btn-success" type="button" data-bs-dismiss="modal">
-                            <i class="bi bi-x-circle"></i> Cancelar
-                        </button>
-                        <button class="btn btn-danger" onclick="cerrarSesion()">
-                            <i class="bi bi-door-closed-fill"></i> Cerrar sesión
-                        </button>
-                    </div>
+    </div>
+    <!-- Logout Modal -->
+    <div class="modal fade" id="logoutModal" tabindex="-1" role="dialog" aria-labelledby="logoutModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title text-dark" id="logoutModalLabel">¿Seguro que te quieres ir?</h5>
+                    <button class="btn-close" type="button" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-dark">
+                    Presiona "Cerrar sesión" si deseas salir de la sesión actual.
+                </div>
+                <div class="modal-footer text-dark">
+                    <button class="btn btn-success" type="button" data-bs-dismiss="modal">
+                        <i class="bi bi-x-circle"></i> Cancelar
+                    </button>
+                    <button class="btn btn-danger" onclick="cerrarSesion()">
+                        <i class="bi bi-door-closed-fill"></i> Cerrar sesión
+                    </button>
                 </div>
             </div>
         </div>
@@ -298,6 +321,23 @@ foreach ($publicaciones as $key => $post) {
         function cerrarSesion() {
             window.location.href = "../index.php";
         }
+    </script>
+
+    <!-- Particulas de background -->
+    <script>
+        particlesJS("particles-js", {
+            particles: {
+                number: { value: 100 },
+                size: { value: 3 },
+                move: { speed: 0.5 },
+                color: { value: "#ffffff" },
+                opacity: { value: 0.8 },
+                line_linked: {
+                    enable: false,
+                },
+            },
+        });
+
     </script>
 
     <!-- Lógica de Reacciones con AJAX -->
