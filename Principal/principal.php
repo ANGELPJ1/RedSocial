@@ -41,6 +41,17 @@ $publicaciones = [];
 if ($result && $result->num_rows > 0) {
     $publicaciones = $result->fetch_all(MYSQLI_ASSOC);
 }
+foreach ($publicaciones as $key => $post) {
+    $sqlCount = "SELECT COUNT(*) AS total FROM comentarios WHERE Id_pub = ?";
+    $stmtCount = $conn->prepare($sqlCount);
+    $stmtCount->bind_param("i", $post['Id_pub']);
+    $stmtCount->execute();
+    $resultCount = $stmtCount->get_result();
+    $countData = $resultCount->fetch_assoc();
+    $publicaciones[$key]['num_comentarios'] = $countData['total'];
+    $stmtCount->close(); // Cierra el statement después de usarlo
+}
+
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -213,9 +224,9 @@ if ($result && $result->num_rows > 0) {
                         <hr class="my-2">
 
                         <!-- Sección de comentarios -->
-                        <button class="btn btn-sm btn-secondary toggle-comments"
-                            data-pub-id="<?php echo $post['Id_pub']; ?>">
+                        <button class="btn btn-sm btn-warning toggle-comments" data-pub-id="<?php echo $post['Id_pub']; ?>">
                             Ver comentarios
+                            <?php echo ($post['num_comentarios'] > 0) ? "(" . $post['num_comentarios'] . ")" : ""; ?>
                         </button>
 
                         <div class="comments-section mt-3" id="comments-<?php echo $post['Id_pub']; ?>"
@@ -429,13 +440,21 @@ if ($result && $result->num_rows > 0) {
                             commentsList.innerHTML = '<p class="text-muted">No hay comentarios.</p>';
                         } else {
                             data.forEach(comment => {
+                                let imgSrc = comment.Img_Perfil ? comment.Img_Perfil : 'default.png'; // Imagen de perfil o default
+
                                 commentsList.innerHTML += `
-                            <div class="comment">
-                                <strong>${comment.Nombre_usu}</strong>: ${comment.Comentario}
-                                <p class="text-muted small">${comment.Fecha_comentario}</p>
-                            </div>
-                        `;
+        <div class="d-flex align-items-start mb-2">
+            <img src="${imgSrc}" alt="Perfil" class="rounded-circle me-2" width="35" height="35" 
+                 onerror="this.src='default.png';">
+            <div>
+                <strong>${comment.Nombre_usu}</strong>
+                <small class="text-muted"> ${comment.Fecha_comentario}</small>
+                <p class="mb-0">${comment.Comentario}</p>
+            </div>
+        </div>
+    `;
                             });
+
                         }
                     })
                     .catch(error => console.error('Error al cargar comentarios:', error));
@@ -468,6 +487,47 @@ if ($result && $result->num_rows > 0) {
                 });
             });
         });
+
+        $(document).ready(function () {
+            $(".toggle-comments").click(function () {
+                let pubId = $(this).data("pub-id");
+                let commentsSection = $("#comments-" + pubId);
+                let commentsList = commentsSection.find(".comments-list");
+
+                if (commentsSection.is(":visible")) {
+                    commentsSection.hide();
+                } else {
+                    $.ajax({
+                        url: "getComments.php",
+                        type: "GET",
+                        data: { id_pub: pubId },
+                        dataType: "json",
+                        success: function (data) {
+                            commentsList.html(""); // Limpiar comentarios previos
+                            if (data.length > 0) {
+                                data.forEach(comment => {
+                                    let commentHtml = `
+                                <div class="d-flex align-items-start mb-2">
+                                    <img src="${comment.Img_Perfil}" alt="Perfil" class="rounded-circle me-2" width="30" height="30">
+                                    <div>
+                                        <strong>${comment.Nombre_usu}</strong>
+                                        <small class="text-muted"> ${comment.Fecha_comentario}</small>
+                                        <p class="mb-0">${comment.Comentario}</p>
+                                    </div>
+                                </div>
+                            `;
+                                    commentsList.append(commentHtml);
+                                });
+                            } else {
+                                commentsList.html('<p class="text-muted">No hay comentarios aún.</p>');
+                            }
+                        }
+                    });
+                    commentsSection.show();
+                }
+            });
+        });
+
     </script>
 
 </body>
