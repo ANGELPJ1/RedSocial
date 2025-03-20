@@ -179,7 +179,7 @@ foreach ($publicaciones as $key => $post) {
                                 <p></p>
                                 Hola, bienvenido a CaptureMe!
                                 <p></p>
-                                <p>Estas en una 1ra. version !!!</p>
+                                <p>Desarrollado por BDAPJ 🤑🤠</p>
                             </h6>
                         </div>
                     </div>
@@ -321,10 +321,10 @@ foreach ($publicaciones as $key => $post) {
         }
     </script>
 
+    <!-- Recuperacion de nuevos post -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
         $(document).ready(function () {
-
             function obtenerUltimoId() {
                 return $(".bg-white[data-pub-id]").last().attr("data-pub-id") || 0;
             }
@@ -337,65 +337,99 @@ foreach ($publicaciones as $key => $post) {
                     data: { ultimoId: ultimoId },
                     dataType: "json",
                     success: function (response) {
-                        console.log("Respuesta del servidor:", response);
-
                         if (!Array.isArray(response)) {
                             console.error("Error: La respuesta no es un array válido.");
                             return;
                         }
 
-                        if (response.length > 0) {
-                            response.forEach(publicacion => {
-                                let publicacionId = publicacion.Id_pub;
-                                let publicacionExistente = $(`.bg-white[data-pub-id="${publicacionId}"]`);
+                        response.forEach(publicacion => {
+                            let publicacionId = publicacion.Id_pub;
+                            let publicacionExistente = $(`.bg-white[data-pub-id="${publicacionId}"]`);
 
-                                if (publicacionExistente.length === 0) {
-                                    // Nueva publicación
-                                    let nuevaPub = `
-                                <div class="bg-white p-3 shadow-sm rounded mb-3 text-dark" data-pub-id="${publicacionId}">
-                                    <div class="d-flex align-items-center mb-2">
-                                        <img src="data:image/jpeg;base64,${publicacion.Perfil_Img}" alt="Foto Usuario" class="rounded-circle me-2" width="40" height="40">
-                                        <strong>${publicacion.Nombre_usu}</strong>
-                                    </div>
-                                    <hr class="my-2">
-                                    <p class="text-black">${publicacion.Contenido_pub}</p>
-                                    ${publicacion.Imagen_Pub ? `<img src="data:image/jpeg;base64,${publicacion.Imagen_Pub}" class="img-fluid" width="80" height="80">` : ""}
-                                    <hr class="my-2">
-                                    <div class="d-flex gap-2">
-                                        <button class="btn btn-primary btn-sm btn-like" data-pub-id="${publicacionId}">
-                                            <i class="fas fa-thumbs-up"></i> Me gusta (<span class="like-counter">${publicacion.Like_pub}</span>)
-                                        </button>
-                                        <button class="btn btn-danger btn-sm btn-dislike" data-pub-id="${publicacionId}">
-                                            <i class="fas fa-thumbs-down"></i> No me gusta (<span class="dislike-counter">${publicacion.Dislike_pub}</span>)
-                                        </button>
-                                        <div class="d-flex justify-content-end">
-                                            <button class="btn btn-sm btn-warning toggle-comments" data-pub-id="${publicacionId}">
-                                                <i class="bi bi-chat-left-dots"></i>
-                                                Ver comentarios (<span class="comment-counter">${publicacion.num_comentarios}</span>)
-                                            </button>
-                                        </div>
-                                    </div>
-                                    <hr class="my-2">
-                                </div>
-                            `;
-                                    $(".publicaciones-container").prepend(nuevaPub);
-                                } else {
-                                    // Actualizar valores existentes
-                                    publicacionExistente.find(".like-counter").text(publicacion.Like_pub);
-                                    publicacionExistente.find(".dislike-counter").text(publicacion.Dislike_pub);
-                                    publicacionExistente.find(".comment-counter").text(publicacion.num_comentarios);
-                                }
-                            });
-                        }
+                            if (publicacionExistente.length > 0) {
+                                // **Actualizar los datos existentes sin reemplazar elementos**
+                                publicacionExistente.find(".counter-like").text(publicacion.Like_pub);
+                                publicacionExistente.find(".counter-dislike").text(publicacion.Dislike_pub);
+                                publicacionExistente.find(".counter-comments").text(publicacion.num_comentarios > 0 ? `(${publicacion.num_comentarios})` : "");
+                            } else {
+                                // **Agregar nueva publicación**
+                                let nuevaPub = `
+                        <div class="bg-white p-3 shadow-sm rounded mb-3 text-dark" data-pub-id="${publicacionId}">
+                            <div class="d-flex align-items-center mb-2">
+                                <img src="data:image/jpeg;base64,${publicacion.Perfil_Img}" alt="Foto Usuario" class="rounded-circle me-2" width="40" height="40">
+                                <strong>${publicacion.Nombre_usu}</strong>
+                            </div>
+                            <hr class="my-2">
+                            <p class="text-black">${publicacion.Contenido_pub}</p>
+                            ${publicacion.Imagen_Pub ? `<img src="data:image/jpeg;base64,${publicacion.Imagen_Pub}" class="img-fluid" width="80" height="80">` : ""}
+                            <hr class="my-2">
+                            <div class="d-flex gap-2">
+                                <button class="btn btn-primary btn-sm btn-like" data-pub-id="${publicacionId}">
+                                    <i class="fas fa-thumbs-up"></i> Me gusta (<span class="counter-like">${publicacion.Like_pub}</span>)
+                                </button>
+                                <button class="btn btn-danger btn-sm btn-dislike" data-pub-id="${publicacionId}">
+                                    <i class="fas fa-thumbs-down"></i> No me gusta (<span class="counter-dislike">${publicacion.Dislike_pub}</span>)
+                                </button>
+                                <button class="btn btn-sm btn-warning toggle-comments" data-pub-id="${publicacionId}">
+                                    <i class="bi bi-chat-left-dots"></i> Ver comentarios <span class="counter-comments">${publicacion.num_comentarios > 0 ? `(${publicacion.num_comentarios})` : ""}</span>
+                                </button>
+                            </div>
+                            <hr class="my-2">
+                        </div>
+                        `;
+                                $(".publicaciones-container").prepend(nuevaPub);
+                            }
+                        });
                     },
                     error: function (xhr, status, error) {
                         console.error("Error en la actualización de publicaciones:", error);
-                        console.log("Respuesta recibida:", xhr.responseText);
                     }
                 });
             }
 
-            // Ejecutar la actualización cada 5 segundos
+            // **Delegación de eventos para evitar problemas con elementos nuevos**
+            $(document).on("click", ".btn-like", function () {
+                let publicacionId = $(this).data("pub-id");
+                let boton = $(this);
+                $.ajax({
+                    url: "procesar_like.php",
+                    type: "POST",
+                    data: { Id_pub: publicacionId },
+                    dataType: "json",
+                    success: function (response) {
+                        if (response.success) {
+                            boton.find(".counter-like").text(response.nuevos_likes);
+                        } else {
+                            alert("Error al dar like.");
+                        }
+                    }
+                });
+            });
+
+            $(document).on("click", ".btn-dislike", function () {
+                let publicacionId = $(this).data("pub-id");
+                let boton = $(this);
+                $.ajax({
+                    url: "procesar_dislike.php",
+                    type: "POST",
+                    data: { Id_pub: publicacionId },
+                    dataType: "json",
+                    success: function (response) {
+                        if (response.success) {
+                            boton.find(".counter-dislike").text(response.nuevos_dislikes);
+                        } else {
+                            alert("Error al dar dislike.");
+                        }
+                    }
+                });
+            });
+
+            $(document).on("click", ".toggle-comments", function () {
+                let publicacionId = $(this).data("pub-id");
+                // Aquí puedes cargar los comentarios de la publicación
+            });
+
+            // **Actualizar publicaciones cada 5 segundos sin afectar botones**
             setInterval(actualizarPublicaciones, 5000);
         });
 

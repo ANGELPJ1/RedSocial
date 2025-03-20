@@ -1,19 +1,16 @@
 <?php
 header("Content-Type: application/json");
-require "../Conexion_BD/bd.php"; // Conexión a la BD
+require "../Conexion_BD/bd.php"; // Conexión a la base de datos
 
 $ultimoId = isset($_GET['ultimoId']) ? intval($_GET['ultimoId']) : 0;
 
-// Consulta para obtener publicaciones más recientes que el último ID, con número de comentarios
-$sql = "SELECT p.Id_pub, u.Nombre_usu, u.Img_Perfil, p.Contenido_pub, p.Imagen_Pub, 
-               p.Like_pub, p.Dislike_pub, 
-               (SELECT COUNT(*) FROM comentarios c WHERE c.Id_pub = p.Id_pub) AS num_comentarios,
-               p.Id_Usu
+// Consulta para obtener publicaciones más recientes que el último ID
+$sql = "SELECT p.Id_pub, u.Nombre_usu, u.Img_Perfil, p.Contenido_pub, p.Imagen_Pub, p.Like_pub, p.Dislike_pub, 
+        (SELECT COUNT(*) FROM comentarios c WHERE c.Id_Pub = p.Id_pub) AS num_comentarios 
         FROM publicaciones p
         JOIN usuarios u ON p.Id_Usu = u.ID_usu
         WHERE p.Id_pub > ? 
         ORDER BY p.Id_pub DESC";
-
 
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("i", $ultimoId);
