@@ -8,29 +8,28 @@ if (!isset($_SESSION['usuario']['correo'])) {
     exit();
 }
 
+// Actualizar los datos del usuario en sesión mediante su ID (único)
 $id = $_SESSION['usuario']['id'];
+$sqlUser = "SELECT ID_usu, Nombre_usu, Usuario_usu, Correo_usu, Img_Perfil FROM usuarios WHERE ID_usu = ?";
+$stmtUser = $conn->prepare($sqlUser);
+$stmtUser->bind_param("i", $id);
+$stmtUser->execute();
+$resultUser = $stmtUser->get_result();
 
-
-// Consulta para obtener los datos del usuario
-$sql = "SELECT ID_usu, Nombre_usu, Usuario_usu, Correo_usu, Pass_usu, Img_Perfil FROM usuarios WHERE ID_usu = ?";
-$stmt = $conn->prepare($sql);
-$stmt->bind_param("i", $id);
-$stmt->execute();
-$result = $stmt->get_result();
-
-if ($result->num_rows > 0) {
-    $usuario = $result->fetch_assoc();
+if ($resultUser->num_rows > 0) {
+    $usuarioDatos = $resultUser->fetch_assoc();
     $_SESSION['usuario'] = [
-        'id' => $usuario['ID_usu'],
-        'nombre' => $usuario['Nombre_usu'],
-        'usuario' => $usuario['Usuario_usu'],
-        'correo' => $usuario['Correo_usu'],
-        'imagen' => $usuario['Img_Perfil']
+        'id' => $usuarioDatos['ID_usu'],
+        'nombre' => $usuarioDatos['Nombre_usu'],
+        'usuario' => $usuarioDatos['Usuario_usu'],
+        'correo' => $usuarioDatos['Correo_usu'],
+        'imagen' => $usuarioDatos['Img_Perfil']
     ];
 } else {
     echo "Usuario no encontrado.";
     exit();
 }
+$stmtUser->close();
 
 // Consulta para obtener todas las publicaciones junto con los datos del usuario publicador
 $sql = "SELECT p.*, u.Nombre_usu, u.Img_Perfil AS Perfil_Img 
@@ -43,7 +42,6 @@ if ($result && $result->num_rows > 0) {
     $publicaciones = $result->fetch_all(MYSQLI_ASSOC);
 }
 ?>
-
 <!DOCTYPE html>
 <html lang="es">
 
@@ -54,14 +52,66 @@ if ($result && $result->num_rows > 0) {
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
     <style>
         body {
             background: linear-gradient(135deg, #1e3c72, #2a5298, #4e54c8, #ff7e5f);
             background-size: cover;
-            height: 97vh;
+            min-height: 97vh;
             margin: 0;
             color: white;
+        }
+
+        /* Fondo animado */
+        .gradiente {
+            width: 100%;
+            max-width: 400px;
+            /* Para limitar el tamaño */
+            padding: 15px;
+            border-radius: 15px;
+            background: linear-gradient(45deg,
+                    #ff0000, #ff7300, #ffeb00, #47ff00, #00ffee, #0047ff,
+                    #7a00ff, #ff00c8, #ff0000, #ff7300, #ffeb00, #47ff00,
+                    #00ffee, #0047ff, #7a00ff, #ff00c8, #ff0000);
+            background-size: 300% 300%;
+            animation: animarGradiente 8s linear infinite;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 10px;
+        }
+
+        @keyframes animarGradiente {
+            0% {
+                background-position: 0% 50%;
+            }
+
+            50% {
+                background-position: 100% 50%;
+            }
+
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+
+        /* Contenedor del perfil */
+        .profile-container {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            width: 100%;
+        }
+
+        .profile-container img {
+            border-radius: 50%;
+        }
+
+        .profile-container h5 {
+            margin-top: 10px;
         }
     </style>
 </head>
@@ -70,51 +120,57 @@ if ($result && $result->num_rows > 0) {
     <div class="container mt-4">
         <div class="row">
             <!-- Perfil Usuario -->
-            <div class="col-md-3">
-                <div class="bg-white p-3 shadow-sm rounded mb-3 text-center text-dark">
-                    <img src="<?php echo 'data:image/jpeg;base64,' . base64_encode($_SESSION['usuario']['imagen']); ?>"
-                        alt="Usuario" class="rounded-circle mb-2" width="50" height="50">
-
-                    <h5 class="fw-bold"> <?php echo $_SESSION['usuario']['nombre']; ?> </h5>
-                    <p class="text-muted">@<?php echo $_SESSION['usuario']['usuario']; ?></p>
-                    <button class="btn btn-warning w-100"><i class="bi bi-person-fill-gear"></i> Editar perfil
-                    </button>
-                    <!-- Botón de Logout -->
-                    <button class="btn btn-danger w-100 mt-2" data-bs-toggle="modal" data-bs-target="#logoutModal">
-                        <i class="bi bi-box-arrow-left"></i> Cerrar sesión
-                    </button>
+            <div class="col-md-3 text-dark">
+                <div class="gradiente">
+                    <div class="profile-container">
+                        <?php
+                        // Mostrar la imagen de perfil: si se almacena como BLOB, conviértela a Base64
+                        if (!empty($_SESSION['usuario']['imagen'])) {
+                            $imgPerfil = 'data:image/jpeg;base64,' . base64_encode($_SESSION['usuario']['imagen']);
+                        } else {
+                            $imgPerfil = 'default.png';
+                        }
+                        ?>
+                        <img src="<?php echo $imgPerfil; ?>" alt="Usuario" width="50" height="50">
+                        <h5 class="fw-bold"><?php echo $_SESSION['usuario']['nombre']; ?></h5>
+                        <p class="text-muted">@<?php echo $_SESSION['usuario']['usuario']; ?></p>
+                        <button class="btn btn-warning w-100"><i class="bi bi-person-fill-gear"></i> Editar
+                            perfil</button>
+                        <button class="btn btn-danger w-100 mt-2" data-bs-toggle="modal" data-bs-target="#logoutModal">
+                            <i class="bi bi-box-arrow-left"></i> Cerrar sesión
+                        </button>
+                    </div>
                 </div>
             </div>
 
+
             <!-- Contenido Principal -->
             <div class="col-md-9">
-                <!-- Publicar -->
+                <!-- Formulario para Publicar -->
                 <form method="post" action="publicar.php" enctype="multipart/form-data">
                     <div class="bg-white p-3 shadow-sm rounded mb-3 text-dark">
                         <h5 class="mb-2">¿Qué estás pensando?</h5>
                         <textarea name="contenido" class="form-control mb-2" rows="2"
                             placeholder="Escribe algo..."></textarea>
-
                         <!-- Campo para imagen (opcional) -->
                         <div class="mb-2">
                             <label class="form-label">Añadir imagen? </label>
                             <input type="file" name="imagen_publicacion" accept=".jpg, .jpeg, .png">
                         </div>
-
                         <div class="d-flex justify-content-end">
-                            <button type="submit" class="btn btn-success"><i class="bi bi-cloud-arrow-up-fill"></i>
-                                Publicar</button>
+                            <button type="submit" class="btn btn-success">
+                                <i class="bi bi-cloud-arrow-up-fill"></i> Publicar
+                            </button>
                         </div>
                     </div>
                 </form>
 
-
                 <!-- Listado de Publicaciones -->
                 <?php foreach ($publicaciones as $post): ?>
-                    <div class="bg-white p-3 shadow-sm rounded mb-3 text-dark">
+                    <div class="bg-white p-3 shadow-sm rounded mb-3 text-dark" data-pub-id="<?php echo $post['Id_pub']; ?>">
                         <div class="d-flex align-items-center mb-2">
                             <?php
-                            // Para la imagen de perfil del usuario que publicó:
+                            // Imagen de perfil del publicador
                             if (!empty($post['Perfil_Img'])) {
                                 $imgPerfilPub = 'data:image/jpeg;base64,' . base64_encode($post['Perfil_Img']);
                             } else {
@@ -125,12 +181,11 @@ if ($result && $result->num_rows > 0) {
                                 width="40" height="40">
                             <strong><?php echo $post['Nombre_usu']; ?></strong>
                         </div>
-                        <!-- No mostramos el Título (Titulo_pub) ya que es para uso interno -->
+                        <!-- Se muestra el contenido de la publicación -->
                         <p class="text-muted"><?php echo $post['Contenido_pub']; ?></p>
                         <?php if (!empty($post['Imagen_Pub'])): ?>
                             <div class="mb-2">
                                 <?php
-                                // Convertir la imagen de la publicación (BLOB) a Base64 para mostrarla
                                 $imgPub = 'data:image/jpeg;base64,' . base64_encode($post['Imagen_Pub']);
                                 ?>
                                 <img src="<?php echo $imgPub; ?>" alt="Imagen Publicación" class="img-fluid" width="80"
@@ -138,14 +193,17 @@ if ($result && $result->num_rows > 0) {
                             </div>
                         <?php endif; ?>
                         <div class="d-flex gap-2">
-                            <button class="btn btn-primary btn-sm"><i class="fas fa-thumbs-up"></i> Like
-                                (<?php echo $post['Like_pub']; ?>)</button>
-                            <button class="btn btn-danger btn-sm"><i class="fas fa-thumbs-down"></i> Dislike
-                                (<?php echo $post['Dislike_pub']; ?>)</button>
+                            <button class="btn btn-primary btn-sm btn-like" data-pub-id="<?php echo $post['Id_pub']; ?>">
+                                <i class="fas fa-thumbs-up"></i> Me gusta (<span
+                                    class="counter"><?php echo $post['Like_pub']; ?></span>)
+                            </button>
+                            <button class="btn btn-danger btn-sm btn-dislike" data-pub-id="<?php echo $post['Id_pub']; ?>">
+                                <i class="fas fa-thumbs-down"></i> No me gusta (<span
+                                    class="counter"><?php echo $post['Dislike_pub']; ?></span>)
+                            </button>
                         </div>
                     </div>
                 <?php endforeach; ?>
-
             </div>
         </div>
 
@@ -161,27 +219,130 @@ if ($result && $result->num_rows > 0) {
                     <div class="modal-body text-dark">
                         Presiona "Cerrar sesión" si deseas salir de la sesión actual.
                     </div>
-                    <div class="modal-footer">
+                    <div class="modal-footer text-dark">
                         <button class="btn btn-success" type="button" data-bs-dismiss="modal">
-                            <i class="bi bi-x-circle"></i>
-                            Cancelar
+                            <i class="bi bi-x-circle"></i> Cancelar
                         </button>
                         <button class="btn btn-danger" onclick="cerrarSesion()">
-                            <i class="bi bi-door-closed-fill"></i>
-                            Cerrar sesión
+                            <i class="bi bi-door-closed-fill"></i> Cerrar sesión
                         </button>
                     </div>
                 </div>
             </div>
         </div>
-
     </div>
 
+    <!-- Scripts -->
     <script>
         function cerrarSesion() {
             window.location.href = "../index.php";
         }
     </script>
+
+    <!-- Lógica de Reacciones con AJAX -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Botón Like
+            document.querySelectorAll('.btn-like').forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    var pubId = this.getAttribute('data-pub-id');
+                    enviarReaccion(pubId, 'like');
+                });
+            });
+            // Botón Dislike
+            document.querySelectorAll('.btn-dislike').forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    var pubId = this.getAttribute('data-pub-id');
+                    enviarReaccion(pubId, 'dislike');
+                });
+            });
+
+            function enviarReaccion(pubId, tipo) {
+                var formData = new URLSearchParams();
+                formData.append('id_pub', pubId);
+                formData.append('tipo', tipo);
+
+                fetch('reaccion.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: formData.toString()
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.error) {
+                            alert(data.error);
+                        } else {
+                            // Actualiza los contadores en la publicación correspondiente
+                            var pubDiv = document.querySelector('[data-pub-id="' + pubId + '"]');
+                            if (pubDiv) {
+                                pubDiv.querySelector('.btn-like .counter').textContent = data.likes;
+                                pubDiv.querySelector('.btn-dislike .counter').textContent = data.dislikes;
+                            }
+                        }
+                    })
+                    .catch(error => console.error('Error:', error));
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', function () {
+            // Inicializa el popover y almacena la instancia en una propiedad del botón
+            var reactionButtons = document.querySelectorAll('.btn-like, .btn-dislike');
+            reactionButtons.forEach(function (btn) {
+                btn.myPopover = new bootstrap.Popover(btn, {
+                    container: 'body',
+                    trigger: 'manual',
+                    html: true,
+                    placement: 'top',
+                    content: 'Cargando...'
+                });
+
+                btn.addEventListener('mouseenter', function () {
+                    clearTimeout(btn.hideTimeout); // Cancela cualquier retardo de ocultado
+                    var pubId = btn.getAttribute('data-pub-id');
+                    var tipo = btn.classList.contains('btn-like') ? 'like' : 'dislike';
+
+                    btn.setAttribute('data-bs-content', 'Cargando...');
+                    btn.myPopover.show();
+
+                    fetch('getReactions.php?id_pub=' + pubId + '&tipo=' + tipo)
+                        .then(response => response.json())
+                        .then(data => {
+                            var content = '';
+                            if (data.length === 0) {
+                                content = 'No hay reacciones.';
+                            } else {
+                                data.forEach(function (user) {
+                                    var userImg = user.Img_Perfil ?
+                                        '<img src="data:image/jpeg;base64,' + user.Img_Perfil + '" width="20" height="20" class="rounded-circle me-1">' :
+                                        '<img src="default.png" width="20" height="20" class="rounded-circle me-1">';
+                                    content += '<div class="d-flex align-items-center mb-1">' +
+                                        userImg +
+                                        '<span>' + user.Nombre_usu + '</span>' +
+                                        '</div>';
+                                });
+                            }
+                            btn.setAttribute('data-bs-content', content);
+                            btn.myPopover.setContent({ '.popover-body': content });
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            btn.setAttribute('data-bs-content', 'Error al cargar');
+                            btn.myPopover.setContent({ '.popover-body': 'Error al cargar' });
+                        });
+                });
+
+                btn.addEventListener('mouseleave', function () {
+                    // Espera 4 minutos (240000 ms) antes de ocultar el popover
+                    btn.hideTimeout = setTimeout(function () {
+                        btn.myPopover.hide();
+                    }, 240000);
+                });
+            });
+        });
+
+
+    </script>
+
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
