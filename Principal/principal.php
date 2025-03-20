@@ -80,7 +80,7 @@ foreach ($publicaciones as $key => $post) {
             width: 100%;
             max-width: 400px;
             /* Para limitar el tamaño */
-            padding: 15px;
+            padding: 5px;
             border-radius: 15px;
             background: linear-gradient(45deg,
                     #ff0000, #ff7300, #ffeb00, #47ff00, #00ffee, #0047ff,
@@ -91,7 +91,6 @@ foreach ($publicaciones as $key => $post) {
             display: flex;
             justify-content: center;
             align-items: center;
-            padding: 10px;
         }
 
         @keyframes animarGradiente {
@@ -154,7 +153,23 @@ foreach ($publicaciones as $key => $post) {
                         </button>
                     </div>
                 </div>
+
+                <br>
+                <br>
+                <div class="gradiente">
+                    <div class="profile-container bg-dark">
+                        <h4>Acerca de...</h4>
+                        <img src="../Resources/logo3.jpg" alt="Usuario" width="100" height="100">
+                        <h6>
+                            <p></p>
+                            Hola, bienvenido a CaptureMe!
+                            <p></p>
+                            <p>Estas en una 1ra. version !!!</p>
+                        </h6>
+                    </div>
+                </div>
             </div>
+
 
 
             <!-- Contenido Principal -->
@@ -218,16 +233,20 @@ foreach ($publicaciones as $key => $post) {
                                 <i class="fas fa-thumbs-down"></i> No me gusta (<span
                                     class="counter"><?php echo $post['Dislike_pub']; ?></span>)
                             </button>
+                            <div class="d-flex justify-content-end">
+                                <button class="btn btn-sm btn-warning toggle-comments"
+                                    data-pub-id="<?php echo $post['Id_pub']; ?>">
+                                    <i class="bi bi-chat-left-dots"></i>
+                                    Ver comentarios
+                                    <?php echo ($post['num_comentarios'] > 0) ? "(" . $post['num_comentarios'] . ")" : ""; ?>
+                                </button>
+                            </div>
                         </div>
 
                         <!-- Línea divisoria antes de los comentarios -->
                         <hr class="my-2">
 
                         <!-- Sección de comentarios -->
-                        <button class="btn btn-sm btn-warning toggle-comments" data-pub-id="<?php echo $post['Id_pub']; ?>">
-                            Ver comentarios
-                            <?php echo ($post['num_comentarios'] > 0) ? "(" . $post['num_comentarios'] . ")" : ""; ?>
-                        </button>
 
                         <div class="comments-section mt-3" id="comments-<?php echo $post['Id_pub']; ?>"
                             style="display: none;">
@@ -443,21 +462,31 @@ foreach ($publicaciones as $key => $post) {
                                 let imgSrc = comment.Img_Perfil ? comment.Img_Perfil : 'default.png'; // Imagen de perfil o default
 
                                 commentsList.innerHTML += `
-        <div class="d-flex align-items-start mb-2">
-            <img src="${imgSrc}" alt="Perfil" class="rounded-circle me-2" width="35" height="35" 
-                 onerror="this.src='default.png';">
-            <div>
-                <strong>${comment.Nombre_usu}</strong>
-                <small class="text-muted"> ${comment.Fecha_comentario}</small>
-                <p class="mb-0">${comment.Comentario}</p>
-            </div>
-        </div>
-    `;
+                            <div class="d-flex align-items-start mb-2">
+                                <img src="${imgSrc}" alt="Perfil" class="rounded-circle me-2" width="35" height="35" 
+                                    onerror="this.src='default.png';">
+                                <div>
+                                    <strong>${comment.Nombre_usu}</strong>
+                                    <small class="text-muted"> ${comment.Fecha_comentario}</small>
+                                    <p class="mb-0">${comment.Comentario}</p>
+                                </div>
+                            </div>
+                        `;
                             });
-
                         }
+
+                        // Actualizar el contador de comentarios
+                        updateCommentCount(pubId, data.length);
                     })
                     .catch(error => console.error('Error al cargar comentarios:', error));
+            }
+
+            // Función para actualizar el número de comentarios en el botón
+            function updateCommentCount(pubId, count) {
+                let commentButton = document.querySelector(`.toggle-comments[data-pub-id="${pubId}"]`);
+                if (commentButton) {
+                    commentButton.innerHTML = `Ver comentarios (${count})`;
+                }
             }
 
             // Agregar nuevo comentario
@@ -478,53 +507,13 @@ foreach ($publicaciones as $key => $post) {
                         .then(data => {
                             if (data.success) {
                                 commentInput.value = ''; // Limpiar campo
-                                loadComments(pubId); // Recargar comentarios
+                                loadComments(pubId); // Recargar comentarios y actualizar contador
                             } else {
                                 alert('Error al agregar comentario.');
                             }
                         })
                         .catch(error => console.error('Error al agregar comentario:', error));
                 });
-            });
-        });
-
-        $(document).ready(function () {
-            $(".toggle-comments").click(function () {
-                let pubId = $(this).data("pub-id");
-                let commentsSection = $("#comments-" + pubId);
-                let commentsList = commentsSection.find(".comments-list");
-
-                if (commentsSection.is(":visible")) {
-                    commentsSection.hide();
-                } else {
-                    $.ajax({
-                        url: "getComments.php",
-                        type: "GET",
-                        data: { id_pub: pubId },
-                        dataType: "json",
-                        success: function (data) {
-                            commentsList.html(""); // Limpiar comentarios previos
-                            if (data.length > 0) {
-                                data.forEach(comment => {
-                                    let commentHtml = `
-                                <div class="d-flex align-items-start mb-2">
-                                    <img src="${comment.Img_Perfil}" alt="Perfil" class="rounded-circle me-2" width="30" height="30">
-                                    <div>
-                                        <strong>${comment.Nombre_usu}</strong>
-                                        <small class="text-muted"> ${comment.Fecha_comentario}</small>
-                                        <p class="mb-0">${comment.Comentario}</p>
-                                    </div>
-                                </div>
-                            `;
-                                    commentsList.append(commentHtml);
-                                });
-                            } else {
-                                commentsList.html('<p class="text-muted">No hay comentarios aún.</p>');
-                            }
-                        }
-                    });
-                    commentsSection.show();
-                }
             });
         });
 
