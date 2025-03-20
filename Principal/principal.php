@@ -64,11 +64,9 @@ foreach ($publicaciones as $key => $post) {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <link rel="stylesheet" href="barra.css">
-
+    <link rel="stylesheet" href="../barra.css">
+    <!-- Libreria de efectos de particulas -->
     <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
-
-
     <style>
         /* Fondo animado */
         .gradiente {
@@ -211,87 +209,87 @@ foreach ($publicaciones as $key => $post) {
                     </form>
 
                     <!-- Listado de Publicaciones -->
-                    <?php foreach ($publicaciones as $post): ?>
-                        <div class="bg-white p-3 shadow-sm rounded mb-3 text-dark"
-                            data-pub-id="<?php echo $post['Id_pub']; ?>">
-                            <div class="d-flex align-items-center mb-2">
-                                <?php
-                                // Imagen de perfil del publicador
-                                if (!empty($post['Perfil_Img'])) {
-                                    $imgPerfilPub = 'data:image/jpeg;base64,' . base64_encode($post['Perfil_Img']);
-                                } else {
-                                    $imgPerfilPub = 'default.png';
-                                }
-                                ?>
-                                <img src="<?php echo $imgPerfilPub; ?>" alt="Foto Usuario" class="rounded-circle me-2"
-                                    width="40" height="40">
-                                <strong><?php echo $post['Nombre_usu']; ?></strong>
-                            </div>
-                            <hr class="my-2"> <!-- Línea divisoria -->
-
-                            <!-- Contenido de la publicación -->
-                            <p class="text-black"><?php echo $post['Contenido_pub']; ?></p>
-                            <?php if (!empty($post['Imagen_Pub'])): ?>
-                                <div class="mb-2">
+                    <div class="publicaciones-container">
+                        <?php foreach ($publicaciones as $post): ?>
+                            <div class="bg-white p-3 shadow-sm rounded mb-3 text-dark"
+                                data-pub-id="<?php echo $post['Id_pub']; ?>">
+                                <div class="d-flex align-items-center mb-2">
                                     <?php
-                                    $imgPub = 'data:image/jpeg;base64,' . base64_encode($post['Imagen_Pub']);
+                                    // Imagen de perfil del publicador
+                                    if (!empty($post['Perfil_Img'])) {
+                                        $imgPerfilPub = 'data:image/jpeg;base64,' . base64_encode($post['Perfil_Img']);
+                                    } else {
+                                        $imgPerfilPub = 'default.png';
+                                    }
                                     ?>
-                                    <img src="<?php echo $imgPub; ?>" alt="Imagen Publicación" class="img-fluid" width="80"
-                                        height="80">
+                                    <img src="<?php echo $imgPerfilPub; ?>" alt="Foto Usuario" class="rounded-circle me-2"
+                                        width="40" height="40">
+                                    <strong><?php echo $post['Nombre_usu']; ?></strong>
                                 </div>
-                            <?php endif; ?>
+                                <hr class="my-2"> <!-- Línea divisoria -->
 
-                            <hr class="my-2"> <!-- Línea divisoria -->
-                            <div class="d-flex gap-2">
-                                <button class="btn btn-primary btn-sm btn-like"
-                                    data-pub-id="<?php echo $post['Id_pub']; ?>">
-                                    <i class="fas fa-thumbs-up"></i> Me gusta (<span
-                                        class="counter"><?php echo $post['Like_pub']; ?></span>)
-                                </button>
-                                <button class="btn btn-danger btn-sm btn-dislike"
-                                    data-pub-id="<?php echo $post['Id_pub']; ?>">
-                                    <i class="fas fa-thumbs-down"></i> No me gusta (<span
-                                        class="counter"><?php echo $post['Dislike_pub']; ?></span>)
-                                </button>
-                                <div class="d-flex justify-content-end">
-                                    <button class="btn btn-sm btn-warning toggle-comments"
+                                <!-- Contenido de la publicación -->
+                                <p class="text-black"><?php echo $post['Contenido_pub']; ?></p>
+                                <?php if (!empty($post['Imagen_Pub'])): ?>
+                                    <div class="mb-2">
+                                        <?php
+                                        $imgPub = 'data:image/jpeg;base64,' . base64_encode($post['Imagen_Pub']);
+                                        ?>
+                                        <img src="<?php echo $imgPub; ?>" alt="Imagen Publicación" class="img-fluid" width="80"
+                                            height="80">
+                                    </div>
+                                <?php endif; ?>
+
+                                <hr class="my-2"> <!-- Línea divisoria -->
+                                <div class="d-flex gap-2">
+                                    <button class="btn btn-primary btn-sm btn-like"
                                         data-pub-id="<?php echo $post['Id_pub']; ?>">
-                                        <i class="bi bi-chat-left-dots"></i>
-                                        Ver comentarios
-                                        <?php echo ($post['num_comentarios'] > 0) ? "(" . $post['num_comentarios'] . ")" : ""; ?>
+                                        <i class="fas fa-thumbs-up"></i> Me gusta (<span
+                                            class="counter"><?php echo $post['Like_pub']; ?></span>)
                                     </button>
+                                    <button class="btn btn-danger btn-sm btn-dislike"
+                                        data-pub-id="<?php echo $post['Id_pub']; ?>">
+                                        <i class="fas fa-thumbs-down"></i> No me gusta (<span
+                                            class="counter"><?php echo $post['Dislike_pub']; ?></span>)
+                                    </button>
+                                    <div class="d-flex justify-content-end">
+                                        <button class="btn btn-sm btn-warning toggle-comments"
+                                            data-pub-id="<?php echo $post['Id_pub']; ?>">
+                                            <i class="bi bi-chat-left-dots"></i>
+                                            Ver comentarios
+                                            <?php echo ($post['num_comentarios'] > 0) ? "(" . $post['num_comentarios'] . ")" : ""; ?>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Línea divisoria antes de los comentarios -->
+                                <hr class="my-2">
+
+                                <!-- Sección de comentarios -->
+
+                                <div class="comments-section mt-3" id="comments-<?php echo $post['Id_pub']; ?>"
+                                    style="display: none;">
+                                    <div class="comments-list"></div> <!-- Aquí se cargarán los comentarios -->
+
+                                    <!-- Formulario para agregar comentario -->
+                                    <div class="mt-2">
+                                        <textarea class="form-control comment-input"
+                                            placeholder="Escribe un comentario..."></textarea>
+                                        <button class="btn btn-sm btn-success mt-2 add-comment"
+                                            data-pub-id="<?php echo $post['Id_pub']; ?>">
+                                            <i class="bi bi-chat-dots"></i> Comentar
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
-
-                            <!-- Línea divisoria antes de los comentarios -->
-                            <hr class="my-2">
-
-                            <!-- Sección de comentarios -->
-
-                            <div class="comments-section mt-3" id="comments-<?php echo $post['Id_pub']; ?>"
-                                style="display: none;">
-                                <div class="comments-list"></div> <!-- Aquí se cargarán los comentarios -->
-
-                                <!-- Formulario para agregar comentario -->
-                                <div class="mt-2">
-                                    <textarea class="form-control comment-input"
-                                        placeholder="Escribe un comentario..."></textarea>
-                                    <button class="btn btn-sm btn-success mt-2 add-comment"
-                                        data-pub-id="<?php echo $post['Id_pub']; ?>">
-                                        <i class="bi bi-chat-dots"></i> Comentar
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    <?php endforeach; ?>
+                        <?php endforeach; ?>
+                    </div>
 
                 </div>
             </div>
-
-
         </div>
-
     </div>
+
     <!-- Logout Modal -->
     <div class="modal fade" id="logoutModal" tabindex="-1" role="dialog" aria-labelledby="logoutModalLabel"
         aria-hidden="true">
@@ -322,6 +320,87 @@ foreach ($publicaciones as $key => $post) {
             window.location.href = "../index.php";
         }
     </script>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function () {
+
+            function obtenerUltimoId() {
+                return $(".bg-white[data-pub-id]").last().attr("data-pub-id") || 0;
+            }
+
+            function actualizarPublicaciones() {
+                let ultimoId = obtenerUltimoId();
+                $.ajax({
+                    url: "obtener_nuevas_publicaciones.php",
+                    type: "GET",
+                    data: { ultimoId: ultimoId },
+                    dataType: "json",
+                    success: function (response) {
+                        console.log("Respuesta del servidor:", response);
+
+                        if (!Array.isArray(response)) {
+                            console.error("Error: La respuesta no es un array válido.");
+                            return;
+                        }
+
+                        if (response.length > 0) {
+                            response.forEach(publicacion => {
+                                let publicacionId = publicacion.Id_pub;
+                                let publicacionExistente = $(`.bg-white[data-pub-id="${publicacionId}"]`);
+
+                                if (publicacionExistente.length === 0) {
+                                    // Nueva publicación
+                                    let nuevaPub = `
+                                <div class="bg-white p-3 shadow-sm rounded mb-3 text-dark" data-pub-id="${publicacionId}">
+                                    <div class="d-flex align-items-center mb-2">
+                                        <img src="data:image/jpeg;base64,${publicacion.Perfil_Img}" alt="Foto Usuario" class="rounded-circle me-2" width="40" height="40">
+                                        <strong>${publicacion.Nombre_usu}</strong>
+                                    </div>
+                                    <hr class="my-2">
+                                    <p class="text-black">${publicacion.Contenido_pub}</p>
+                                    ${publicacion.Imagen_Pub ? `<img src="data:image/jpeg;base64,${publicacion.Imagen_Pub}" class="img-fluid" width="80" height="80">` : ""}
+                                    <hr class="my-2">
+                                    <div class="d-flex gap-2">
+                                        <button class="btn btn-primary btn-sm btn-like" data-pub-id="${publicacionId}">
+                                            <i class="fas fa-thumbs-up"></i> Me gusta (<span class="like-counter">${publicacion.Like_pub}</span>)
+                                        </button>
+                                        <button class="btn btn-danger btn-sm btn-dislike" data-pub-id="${publicacionId}">
+                                            <i class="fas fa-thumbs-down"></i> No me gusta (<span class="dislike-counter">${publicacion.Dislike_pub}</span>)
+                                        </button>
+                                        <div class="d-flex justify-content-end">
+                                            <button class="btn btn-sm btn-warning toggle-comments" data-pub-id="${publicacionId}">
+                                                <i class="bi bi-chat-left-dots"></i>
+                                                Ver comentarios (<span class="comment-counter">${publicacion.num_comentarios}</span>)
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <hr class="my-2">
+                                </div>
+                            `;
+                                    $(".publicaciones-container").prepend(nuevaPub);
+                                } else {
+                                    // Actualizar valores existentes
+                                    publicacionExistente.find(".like-counter").text(publicacion.Like_pub);
+                                    publicacionExistente.find(".dislike-counter").text(publicacion.Dislike_pub);
+                                    publicacionExistente.find(".comment-counter").text(publicacion.num_comentarios);
+                                }
+                            });
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        console.error("Error en la actualización de publicaciones:", error);
+                        console.log("Respuesta recibida:", xhr.responseText);
+                    }
+                });
+            }
+
+            // Ejecutar la actualización cada 5 segundos
+            setInterval(actualizarPublicaciones, 5000);
+        });
+
+    </script>
+
 
     <!-- Particulas de background -->
     <script>
