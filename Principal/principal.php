@@ -56,12 +56,13 @@ if ($result && $result->num_rows > 0) {
 
     <style>
         body {
-            background: linear-gradient(135deg, #1e3c72, #2a5298, #4e54c8, #ff7e5f);
+            background: #111;
             background-size: cover;
             min-height: 97vh;
             margin: 0;
             color: white;
         }
+
 
         /* Fondo animado */
         .gradiente {
@@ -120,9 +121,9 @@ if ($result && $result->num_rows > 0) {
     <div class="container mt-4">
         <div class="row">
             <!-- Perfil Usuario -->
-            <div class="col-md-3 text-dark">
+            <div class="col-md-3 text-white">
                 <div class="gradiente">
-                    <div class="profile-container">
+                    <div class="profile-container bg-dark">
                         <?php
                         // Mostrar la imagen de perfil: si se almacena como BLOB, conviértela a Base64
                         if (!empty($_SESSION['usuario']['imagen'])) {
@@ -133,7 +134,7 @@ if ($result && $result->num_rows > 0) {
                         ?>
                         <img src="<?php echo $imgPerfil; ?>" alt="Usuario" width="50" height="50">
                         <h5 class="fw-bold"><?php echo $_SESSION['usuario']['nombre']; ?></h5>
-                        <p class="text-muted">@<?php echo $_SESSION['usuario']['usuario']; ?></p>
+                        <p class="text-white">@<?php echo $_SESSION['usuario']['usuario']; ?></p>
                         <button class="btn btn-warning w-100"><i class="bi bi-person-fill-gear"></i> Editar
                             perfil</button>
                         <button class="btn btn-danger w-100 mt-2" data-bs-toggle="modal" data-bs-target="#logoutModal">
@@ -181,6 +182,7 @@ if ($result && $result->num_rows > 0) {
                                 width="40" height="40">
                             <strong><?php echo $post['Nombre_usu']; ?></strong>
                         </div>
+                        <hr class="my-2"> <!-- Línea divisoria -->
                         <!-- Se muestra el contenido de la publicación -->
                         <p class="text-muted"><?php echo $post['Contenido_pub']; ?></p>
                         <?php if (!empty($post['Imagen_Pub'])): ?>
@@ -192,6 +194,7 @@ if ($result && $result->num_rows > 0) {
                                     height="80">
                             </div>
                         <?php endif; ?>
+                        <hr class="my-2"> <!-- Línea divisoria -->
                         <div class="d-flex gap-2">
                             <button class="btn btn-primary btn-sm btn-like" data-pub-id="<?php echo $post['Id_pub']; ?>">
                                 <i class="fas fa-thumbs-up"></i> Me gusta (<span
@@ -283,21 +286,30 @@ if ($result && $result->num_rows > 0) {
                     .catch(error => console.error('Error:', error));
             }
         });
+    </script>
 
+    <!-- Muestra de quien reacciona a las publicaciones -->
+    <script>
         document.addEventListener('DOMContentLoaded', function () {
-            // Inicializa el popover y almacena la instancia en una propiedad del botón
+            // Habilitar popovers de Bootstrap
+            var popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'));
+            popoverTriggerList.forEach(function (popoverTriggerEl) {
+                new bootstrap.Popover(popoverTriggerEl);
+            });
+
             var reactionButtons = document.querySelectorAll('.btn-like, .btn-dislike');
+
             reactionButtons.forEach(function (btn) {
                 btn.myPopover = new bootstrap.Popover(btn, {
                     container: 'body',
-                    trigger: 'manual',
+                    trigger: 'manual', // Evita que Bootstrap lo cierre automáticamente
                     html: true,
                     placement: 'top',
                     content: 'Cargando...'
                 });
 
                 btn.addEventListener('mouseenter', function () {
-                    clearTimeout(btn.hideTimeout); // Cancela cualquier retardo de ocultado
+                    clearTimeout(btn.hideTimeout); // Cancela ocultado anterior
                     var pubId = btn.getAttribute('data-pub-id');
                     var tipo = btn.classList.contains('btn-like') ? 'like' : 'dislike';
 
@@ -307,22 +319,41 @@ if ($result && $result->num_rows > 0) {
                     fetch('getReactions.php?id_pub=' + pubId + '&tipo=' + tipo)
                         .then(response => response.json())
                         .then(data => {
-                            var content = '';
+                            var content = '<div id="popover-content">';
                             if (data.length === 0) {
-                                content = 'No hay reacciones.';
+                                content += '<p class="m-0">No hay reacciones.</p>';
                             } else {
                                 data.forEach(function (user) {
                                     var userImg = user.Img_Perfil ?
                                         '<img src="data:image/jpeg;base64,' + user.Img_Perfil + '" width="20" height="20" class="rounded-circle me-1">' :
                                         '<img src="default.png" width="20" height="20" class="rounded-circle me-1">';
+
                                     content += '<div class="d-flex align-items-center mb-1">' +
                                         userImg +
                                         '<span>' + user.Nombre_usu + '</span>' +
                                         '</div>';
                                 });
                             }
-                            btn.setAttribute('data-bs-content', content);
-                            btn.myPopover.setContent({ '.popover-body': content });
+                            content += '</div>';
+
+                            // Esperar a que Bootstrap renderice el popover antes de cambiar su contenido
+                            setTimeout(() => {
+                                var popover = document.querySelector('.popover');
+                                if (popover) {
+                                    popover.querySelector('.popover-body').innerHTML = content;
+
+                                    // Evita que el popover desaparezca si el cursor entra en él
+                                    popover.addEventListener('mouseenter', function () {
+                                        clearTimeout(btn.hideTimeout);
+                                    });
+
+                                    popover.addEventListener('mouseleave', function () {
+                                        btn.hideTimeout = setTimeout(() => {
+                                            btn.myPopover.hide();
+                                        }, 500);
+                                    });
+                                }
+                            }, 100);
                         })
                         .catch(error => {
                             console.error('Error:', error);
@@ -332,19 +363,15 @@ if ($result && $result->num_rows > 0) {
                 });
 
                 btn.addEventListener('mouseleave', function () {
-                    // Espera 4 minutos (240000 ms) antes de ocultar el popover
-                    btn.hideTimeout = setTimeout(function () {
+                    btn.hideTimeout = setTimeout(() => {
                         btn.myPopover.hide();
-                    }, 240000);
+                    }, 500); // Cierra después de 0.5s si el usuario no regresa
                 });
             });
         });
 
-
     </script>
 
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 
 </html>
