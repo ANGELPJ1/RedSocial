@@ -135,9 +135,10 @@ if ($result && $result->num_rows > 0) {
                         <img src="<?php echo $imgPerfil; ?>" alt="Usuario" width="50" height="50">
                         <h5 class="fw-bold"><?php echo $_SESSION['usuario']['nombre']; ?></h5>
                         <p class="text-white">@<?php echo $_SESSION['usuario']['usuario']; ?></p>
-                        <button class="btn btn-warning w-100"><i class="bi bi-person-fill-gear"></i> Editar
+                        <button class="btn btn-outline-warning w-100"><i class="bi bi-person-fill-gear"></i> Editar
                             perfil</button>
-                        <button class="btn btn-danger w-100 mt-2" data-bs-toggle="modal" data-bs-target="#logoutModal">
+                        <button class="btn btn-outline-danger w-100 mt-2" data-bs-toggle="modal"
+                            data-bs-target="#logoutModal">
                             <i class="bi bi-box-arrow-left"></i> Cerrar sesión
                         </button>
                     </div>
@@ -183,7 +184,8 @@ if ($result && $result->num_rows > 0) {
                             <strong><?php echo $post['Nombre_usu']; ?></strong>
                         </div>
                         <hr class="my-2"> <!-- Línea divisoria -->
-                        <!-- Se muestra el contenido de la publicación -->
+
+                        <!-- Contenido de la publicación -->
                         <p class="text-muted"><?php echo $post['Contenido_pub']; ?></p>
                         <?php if (!empty($post['Imagen_Pub'])): ?>
                             <div class="mb-2">
@@ -194,6 +196,7 @@ if ($result && $result->num_rows > 0) {
                                     height="80">
                             </div>
                         <?php endif; ?>
+
                         <hr class="my-2"> <!-- Línea divisoria -->
                         <div class="d-flex gap-2">
                             <button class="btn btn-primary btn-sm btn-like" data-pub-id="<?php echo $post['Id_pub']; ?>">
@@ -205,8 +208,33 @@ if ($result && $result->num_rows > 0) {
                                     class="counter"><?php echo $post['Dislike_pub']; ?></span>)
                             </button>
                         </div>
+
+                        <!-- Línea divisoria antes de los comentarios -->
+                        <hr class="my-2">
+
+                        <!-- Sección de comentarios -->
+                        <button class="btn btn-sm btn-secondary toggle-comments"
+                            data-pub-id="<?php echo $post['Id_pub']; ?>">
+                            Ver comentarios
+                        </button>
+
+                        <div class="comments-section mt-3" id="comments-<?php echo $post['Id_pub']; ?>"
+                            style="display: none;">
+                            <div class="comments-list"></div> <!-- Aquí se cargarán los comentarios -->
+
+                            <!-- Formulario para agregar comentario -->
+                            <div class="mt-2">
+                                <textarea class="form-control comment-input"
+                                    placeholder="Escribe un comentario..."></textarea>
+                                <button class="btn btn-sm btn-success mt-2 add-comment"
+                                    data-pub-id="<?php echo $post['Id_pub']; ?>">
+                                    Comentar
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 <?php endforeach; ?>
+
             </div>
         </div>
 
@@ -369,7 +397,77 @@ if ($result && $result->num_rows > 0) {
                 });
             });
         });
+    </script>
 
+    <!-- Seccion de comentarios -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Mostrar/Ocultar comentarios al hacer clic en el botón
+            document.querySelectorAll('.toggle-comments').forEach(button => {
+                button.addEventListener('click', function () {
+                    let pubId = this.getAttribute('data-pub-id');
+                    let commentSection = document.getElementById('comments-' + pubId);
+
+                    if (commentSection.style.display === 'none') {
+                        commentSection.style.display = 'block';
+                        loadComments(pubId);
+                    } else {
+                        commentSection.style.display = 'none';
+                    }
+                });
+            });
+
+            // Función para cargar comentarios
+            function loadComments(pubId) {
+                fetch('getComments.php?id_pub=' + pubId)
+                    .then(response => response.json())
+                    .then(data => {
+                        let commentsList = document.querySelector('#comments-' + pubId + ' .comments-list');
+                        commentsList.innerHTML = ''; // Limpiar comentarios anteriores
+
+                        if (data.length === 0) {
+                            commentsList.innerHTML = '<p class="text-muted">No hay comentarios.</p>';
+                        } else {
+                            data.forEach(comment => {
+                                commentsList.innerHTML += `
+                            <div class="comment">
+                                <strong>${comment.Nombre_usu}</strong>: ${comment.Comentario}
+                                <p class="text-muted small">${comment.Fecha_comentario}</p>
+                            </div>
+                        `;
+                            });
+                        }
+                    })
+                    .catch(error => console.error('Error al cargar comentarios:', error));
+            }
+
+            // Agregar nuevo comentario
+            document.querySelectorAll('.add-comment').forEach(button => {
+                button.addEventListener('click', function () {
+                    let pubId = this.getAttribute('data-pub-id');
+                    let commentInput = document.querySelector('#comments-' + pubId + ' .comment-input');
+                    let comentario = commentInput.value.trim();
+
+                    if (comentario === '') return;
+
+                    fetch('addComment.php', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                        body: `id_pub=${pubId}&comentario=${encodeURIComponent(comentario)}`
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                commentInput.value = ''; // Limpiar campo
+                                loadComments(pubId); // Recargar comentarios
+                            } else {
+                                alert('Error al agregar comentario.');
+                            }
+                        })
+                        .catch(error => console.error('Error al agregar comentario:', error));
+                });
+            });
+        });
     </script>
 
 </body>
